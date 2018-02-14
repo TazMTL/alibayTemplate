@@ -2,35 +2,35 @@
 
 const assert = require('assert')
 
-let testItem = {
-  prodName: 'Red Boat',
-  price: 5000,
-  blurb: 'a very nice red boat!',
-  image: 'http://clipart-library.com/img/1699050.jpg',
-  isSold: false,
-  sellerID: genUID,
-  itemId: genUID
-}
+// let testItem = {
+//   prodName: 'Red Boat',
+//   price: 5000,
+//   blurb: 'a very nice red boat!',
+//   image: 'http://clipart-library.com/img/1699050.jpg',
+//   isSold: false,
+//   sellerID: genUID,
+//   itemId: genUID
+// }
 
-let testItems = {
-  1: {
-    prodName: 'Red Boat',
-    price: 5000,
-    blurb: 'a very nice red boat!',
-    image: 'http://clipart-library.com/img/1699050.jpg',
-    isSold: false,
-    sellerID: genUID(),
-    itemId: genUID()},
-  2: {
-    prodName: 'Blue Boat',
-    price: 6000,
-    blurb: 'a very nice blue boat!',
-    image: 'http://clipart-library.com/img/1699050.jpg',
-    isSold: false,
-    sellerID: genUID(),
-    itemId: genUID()
-  }
-}
+// let testItems = {
+//   1: {
+//     prodName: 'Red Boat',
+//     price: 5000,
+//     blurb: 'a very nice red boat!',
+//     image: 'http://clipart-library.com/img/1699050.jpg',
+//     isSold: false,
+//     sellerID: genUID(),
+//     itemId: genUID()},
+//   2: {
+//     prodName: 'Blue Boat',
+//     price: 6000,
+//     blurb: 'a very nice blue boat!',
+//     image: 'http://clipart-library.com/img/1699050.jpg',
+//     isSold: false,
+//     sellerID: genUID(),
+//     itemId: genUID()
+//   }
+// }
 
 // ask TA about Dynamic Key
 let itemsBought = [] // map that keeps track of all the items a user has bought
@@ -104,18 +104,19 @@ This function is incomplete. You need to complete it.
       [blurb] A blurb describing the item
     returns: The ID of the new listing
 */
-function createListing (sellerID, name, price, blurb) {
-  console.log(sellerID, name, price, blurb)
+function createListing (sellerID, name, price, blurb, image) {
+  console.log(sellerID, name, price, blurb, image)
   var productObj = {}
   productObj.sellerID = sellerID
-  productObj.name = name
+  productObj.prodName = name
   productObj.price = price
   productObj.blurb = blurb
   productObj.isSold = false
+  productObj.image = image
   var listingID = genUID()
   productObj.itemId = listingID
   allItems[listingID] = productObj
-  // console.log('test 1', allItems)
+  console.log('test 1', allItems)
   return listingID
 }
 
@@ -205,14 +206,21 @@ Once an item is sold, it will not be returned by searchForListings
 */
 function searchForListings (searchTerm) {
   var searchResults = []
-  let list = allListings()
+  // let list = allListings()
+  let list = allItems
   console.log('list', list)
-  list.forEach(id => {
-    var blurb = allItems[id].blurb
+  for (let i in list) {
+    var blurb = list[i].blurb
     if (blurb.includes(searchTerm)) {
-      searchResults = searchResults.concat(id)
+      searchResults = searchResults.concat(list[i])
     }
-  })
+  // list.forEach(id => {
+  //   var blurb = testItems.blurb
+  //   // var blurb = allItems[id].blurb
+  //   if (blurb.includes(searchTerm)) {
+  //     searchResults = searchResults.concat(id)
+  //   }
+  }
   console.log(searchResults)
   return searchResults
 }
@@ -230,8 +238,8 @@ module.exports = {
   searchForListings,
   allItemsBought,
   allItems,
-  testItem,
-  testItems,
+  // testItem,
+  // testItems,
   signIN
     // Add all the other functions that need to be exported
 }

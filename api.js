@@ -11,10 +11,6 @@ const bodyParser = require('body-parser')
 app.use(bodyParser.raw({type: '*/*'}))
 // app.use(cors())
 
-app.get('/', (req, res) => {
-  res.send('Success')
-})
-
 app.get('/itemsBought', (req, res) => {
   let uid = req.query.uid
   res.send(JSON.stringify(alibay.getItemsBought(uid)))
@@ -38,12 +34,17 @@ app.post('/shipping', (req, res) => {
 })
 
 app.post('/search', (req, res) => {
-  console.log(JSON.parse(req.body))
-  res.send(req.body)
+  console.log(req.body.toString())
+  var searchResponse = req.body.toString()
+  console.log(searchResponse)
+  var srchRsp = alibay.searchForListings(searchResponse)
+  console.log(JSON.stringify(srchRsp))
+  res.send(JSON.stringify(srchRsp))
+  // res.send('' + searchResponse)
 })
 
 app.post('/getAllItems', (req, res) => {
-  res.send(alibay.testItems)
+  res.send(alibay.allItems)
   // res.send('success')
 })
 
@@ -68,22 +69,18 @@ app.post('/login', (req, res) => {
   var usr = loginInformation.username
   var pwd = loginInformation.password
   var loggedIn = alibay.signIN(usr, pwd)
-  res.send('' + loggedIn)
-  console.log('success')
+  res.send('' + loggedIn) // send 'success or failure to user'
 })
 
 app.post('/newListing', (req, res) => {
   var productInformation = JSON.parse(req.body)
   console.log(productInformation)
   var name = productInformation.name
-  var sellerID = productInformation.sellerID
+  var sellerID = 12345
   var price = productInformation.price
   var blurb = productInformation.blurb
-
-  // console.log('test1', productInformation)
-  // console.log('test2', alibay.createListing(productInformation))
-  var listingID = alibay.createListing(sellerID, name, price, blurb)
-  console.log(listingID)
+  var image = productInformation.image
+  var listingID = alibay.createListing(sellerID, name, price, blurb, image)
   res.send(alibay.allItems[listingID])
 }
 )
