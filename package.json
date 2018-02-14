@@ -10,6 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "assert": "^1.4.1",
+    "body-parser": "file:node_modules/body-parser",
+    "express": "^4.16.2",
     "fs-extra": "^5.0.0"
   }
 }
