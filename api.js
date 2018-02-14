@@ -4,11 +4,32 @@ const alibay = require('./alibay')
 const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
+const fs = require('fs')
 // const cors = require('cors')
 // const mysql = require('mysql')
 // var fs = require('fs');
 
+function parseCookies (str) {
+  let asArray = str.split('; ').map(x => x.split('='))
+  let ret = {}
+  asArray.forEach(lst => ret[lst[0]] = lst[1])
+  return ret
+}
+
+app.get('/', (req, res) => {
+  if (req.headers.cookie) {
+    let cookies = parseCookies(req.headers.cookie)
+    if (cookies.sessionId) {
+      res.send('Your session id is ' + cookies.sessionId)
+      return
+    }
+  }
+  res.set('Set-Cookie', 'sessionId=' + genRand())
+  res.send(JSON.stringify(req.headers.cookie))
+})
+
 app.use(bodyParser.raw({type: '*/*'}))
+app.use(bodyParser({ limit: '50mb' }))
 // app.use(cors())
 
 app.get('/itemsBought', (req, res) => {
@@ -55,10 +76,10 @@ app.post('/signUp', (req, res) => {
   var pwd = loginInformation.password
   var userID = alibay.initializeUserIfNeeded(usr, pwd)
   console.log('test 2', userID)
-    //   var sessionId = '' + Math.floor(Math.random() * 1000000)
-    //   res.set('Set-Cookie', 'sessionId=' + sessionId)
-    //   cookieMap[sessionId] = usr
-    //   console.log(JSON.stringify(req.body.toString()))
+  var sessionId = '' + Math.floor(Math.random() * 1000000)
+  res.set('Set-Cookie', 'sessionId=' + sessionId)
+  cookieMap[sessionId] = usr
+  console.log(JSON.stringify(req.body.toString()))
   res.send('You KNow da Wae!')
   console.log('success')
 })

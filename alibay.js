@@ -1,6 +1,7 @@
 'use strict'
 
 const assert = require('assert')
+const fs = require('fs')
 
 // let testItem = {
 //   prodName: 'Red Boat',
@@ -34,9 +35,17 @@ const assert = require('assert')
 
 // ask TA about Dynamic Key
 let itemsBought = [] // map that keeps track of all the items a user has bought
-let allItems = {}
+let allItems = getItems()
 let itemsSold = []
 let allUser = {}
+
+function getItems () {
+  var allItemsData = fs.readFileSync('allItems.txt').toString()
+  if (allItemsData === '' || !allItemsData) {
+    return {}
+  }
+  return JSON.parse(allItemsData)
+}
 
 /*
 Before implementing the login functionality, use this function to generate a new UID every time.
@@ -117,6 +126,7 @@ function createListing (sellerID, name, price, blurb, image) {
   productObj.itemId = listingID
   allItems[listingID] = productObj
   console.log('test 1', allItems)
+  fs.writeFileSync('allItems.txt', JSON.stringify(allItems))
   return listingID
 }
 
