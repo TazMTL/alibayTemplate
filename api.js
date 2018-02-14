@@ -28,8 +28,7 @@ app.get('/', (req, res) => {
   res.send(JSON.stringify(req.headers.cookie))
 })
 
-app.use(bodyParser.raw({type: '*/*'}))
-app.use(bodyParser({ limit: '50mb' }))
+app.use(bodyParser.raw({type: '*/*', limit: '50mb'}))
 // app.use(cors())
 
 app.get('/itemsBought', (req, res) => {
