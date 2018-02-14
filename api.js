@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 const alibay = require('./alibay')
 const express = require('express')
