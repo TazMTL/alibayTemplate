@@ -24,7 +24,7 @@ let testItems = {
   2: {
     prodName: 'Blue Boat',
     price: 6000,
-    blurb: 'a very nice BLUE boat!',
+    blurb: 'a very nice blue boat!',
     image: 'http://clipart-library.com/img/1699050.jpg',
     isSold: false,
     sellerID: genUID(),

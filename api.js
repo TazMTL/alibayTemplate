@@ -37,6 +37,11 @@ app.post('/shipping', (req, res) => {
     // add it to user profile
 })
 
+app.post('/search', (req, res) => {
+  console.log(JSON.parse(req.body))
+  res.send(req.body)
+})
+
 app.post('/getAllItems', (req, res) => {
   res.send(alibay.testItems)
   // res.send('success')
