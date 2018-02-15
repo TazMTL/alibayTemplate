@@ -1,3 +1,5 @@
+// import { readFileSync } from 'fs'
+
 'use strict'
 
 const assert = require('assert')
@@ -13,25 +15,25 @@ const fs = require('fs')
 //   itemId: genUID
 // }
 
-// let testItems = {
-//   1: {
-//     prodName: 'Red Boat',
-//     price: 5000,
-//     blurb: 'a very nice red boat!',
-//     image: 'http://clipart-library.com/img/1699050.jpg',
-//     isSold: false,
-//     sellerID: genUID(),
-//     itemId: genUID()},
-//   2: {
-//     prodName: 'Blue Boat',
-//     price: 6000,
-//     blurb: 'a very nice blue boat!',
-//     image: 'http://clipart-library.com/img/1699050.jpg',
-//     isSold: false,
-//     sellerID: genUID(),
-//     itemId: genUID()
-//   }
-// }
+let testItems = {
+  1: {
+    prodName: 'Red Boat',
+    price: 5000,
+    blurb: 'a very nice red boat!',
+    image: 'http://clipart-library.com/img/1699050.jpg',
+    isSold: false,
+    sellerID: genUID(),
+    itemId: genUID()},
+  2: {
+    prodName: 'Blue Boat',
+    price: 6000,
+    blurb: 'a very nice blue boat!',
+    image: 'http://clipart-library.com/img/1699050.jpg',
+    isSold: false,
+    sellerID: genUID(),
+    itemId: genUID()
+  }
+}
 
 // ask TA about Dynamic Key
 let itemsBought = [] // map that keeps track of all the items a user has bought
@@ -249,7 +251,7 @@ module.exports = {
   allItemsBought,
   allItems,
   // testItem,
-  // testItems,
+  testItems,
   signIN
     // Add all the other functions that need to be exported
 }
