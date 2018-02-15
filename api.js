@@ -13,7 +13,7 @@ const fs = require('fs')
 // const mysql = require('mysql')
 
 app.use(bodyParser.raw({ type: '*/*', limit: '50mb' }))
-app.use(express.static('image'))
+app.use(express.static('images'))
 // app.use(cors())
 
 // this part of the code deals with signing up
@@ -85,7 +85,6 @@ app.get('/itemsBought', (req, res) => {
 app.post('/upics', (req, res) => {
   // console.log(req.body)
   var filename = req.query.name
-  console.log()
   // var uniqueImageID = alibay.genUID()
   var imagePath = 'images/' + filename
   fs.writeFileSync(imagePath, req.body)
@@ -130,7 +129,7 @@ app.post('/newListing', (req, res) => {
   var price = productInformation.price
   var blurb = productInformation.blurb
   var image = productInformation.image // getPicture return image path
-  var listingID = alibay.createListing(sellerID, name, price, blurb) // image)
+  var listingID = alibay.createListing(sellerID, name, price, blurb, image)
   res.send(alibay.allItems[listingID])
 }
 )

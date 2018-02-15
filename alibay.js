@@ -124,6 +124,7 @@ function createListing (sellerID, name, price, blurb, image) {
   productObj.blurb = blurb
   productObj.isSold = false
   productObj.image = image
+  console.log('test image', image)
   var listingID = genUID()
   productObj.itemId = listingID
   allItems[listingID] = productObj
@@ -218,13 +219,25 @@ Once an item is sold, it will not be returned by searchForListings
 */
 function searchForListings (searchTerm) {
   var searchResults = []
+  searchTerm = searchTerm.toLowerCase()
+  console.log('searchTerm', searchTerm)
   // let list = allListings()
+  // (blurb.includes(searchTerm) ||
   let list = allItems
   console.log('list', list)
   for (let i in list) {
-    var blurb = list[i].blurb
-    if (blurb.includes(searchTerm)) {
+    console.log('this is i', i)
+    console.log(list[i].blurb)
+    console.log(list[i].prodName)
+    console.log('list[i]', list[i])
+    var searchBlurb = list[i].blurb.toLowerCase()
+    console.log('searchBlurb', searchBlurb)
+    var searchName = list[i].prodName.toLowerCase()
+    console.log('searchName', searchName)
+    console.log('searchTerm', searchTerm)
+    if (searchBlurb.includes(searchTerm) || searchName.includes(searchTerm)) {
       searchResults = searchResults.concat(list[i])
+      console.log('search results', searchResults)
     }
   // list.forEach(id => {
   //   var blurb = testItems.blurb
@@ -233,7 +246,7 @@ function searchForListings (searchTerm) {
   //     searchResults = searchResults.concat(id)
   //   }
   }
-  console.log(searchResults)
+  console.log('search results', searchResults)
   return searchResults
 }
 
