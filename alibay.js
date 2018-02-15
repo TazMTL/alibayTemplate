@@ -39,7 +39,7 @@ let testItems = {
 let itemsBought = [] // map that keeps track of all the items a user has bought
 let allItems = getItems()
 let itemsSold = []
-let allUser = {}
+let allUser = getUsers()
 
 function getItems () {
   var allItemsData = fs.readFileSync('allItems.txt').toString()
@@ -49,6 +49,13 @@ function getItems () {
   return JSON.parse(allItemsData)
 }
 
+function getUsers () {
+  var allUserData = fs.readFileSync('allUser.txt').toString()
+  if (allUserData === '' || !allUserData) {
+    return {}
+  }
+  return JSON.parse(allUserData)
+}
 /*
 Before implementing the login functionality, use this function to generate a new UID every time.
 */
@@ -61,7 +68,7 @@ function putItemsBought (userID, value) {
 }
 
 function getItemsBought (userID) {
-  var ret = itemsBought[userID]
+  var ret = allItems[userID] //  itemsBought[userID]
   if (ret === undefined) {
     return null
   }
@@ -85,13 +92,14 @@ function initializeUserIfNeeded (usr, pwd) {
   user.username = usr
   user.password = pwd
   var userID = genUID()
+  user.sellerID = userID
   user.userID = userID
   allUser[userID] = user
-  console.log(allUser[userID])
   var items = getItemsBought[user.userID]
   if (items === undefined) {
     putItemsBought(userID, [])
   }
+  fs.writeFileSync('allUser.txt', JSON.stringify(allUser))
   return allUser[userID].userID
 }
 
@@ -167,8 +175,8 @@ function buy (buyerID, sellerID, listingID) {
   itemsBought[buyerID] = itemsBought[buyerID].concat(listingID)
   if (itemsSold[sellerID] === undefined) { itemsSold[sellerID] = [] }
   itemsSold[sellerID] = itemsSold[sellerID].concat(listingID)
-  // console.log('buy consolelog ItemsBought', itemsBought[buyerID])
-  // console.log('buy consolelog ItemsSold', itemsSold[sellerID])
+  console.log('buy ItemsBought', itemsBought[buyerID])
+  console.log('buy ItemsSold', itemsSold[sellerID])
   return undefined
 }
 
@@ -178,6 +186,7 @@ allItemsSold returns the IDs of all the items sold by a seller
     returns: an array of listing IDs
 */
 function allItemsSold (sellerID) {
+  var allItemsSold = {}
   // console.log('ItemSold', itemsSold)
   // console.log('SellerID', sellerID)
   // console.log('ItemsSOld(sellerID)', itemsSold[sellerID])
@@ -189,7 +198,24 @@ function allItemsSold (sellerID) {
   //   var allItemsSold = arr.concat(itemsSold[sellerID])
   // console.log('list of items sold', allItemsSold)
 
-  return itemsSold[sellerID]
+  return allItemsSold // itemsSold[sellerID]
+}
+
+function getItemsForSale (sellerID) {
+  var itemsForSale = {}
+  itemsForSale = allItems[sellerID]
+  // console.log('ItemSold', itemsSold)
+  // console.log('SellerID', sellerID)
+  // console.log('ItemsSOld(sellerID)', itemsSold[sellerID])
+  // var arr = []
+  // console.log(itemsSold[sellerID].listingID)
+  // var allItemsSold = arr.concat(itemsSold[sellerID].listingID)
+
+  // for (let i of itemsSold[sellerID]) {
+  //   var allItemsSold = arr.concat(itemsSold[sellerID])
+  // console.log('list of items sold', allItemsSold)
+
+  return itemsForSale
 }
 
 /*
@@ -265,6 +291,8 @@ module.exports = {
   allItems,
   // testItem,
   testItems,
-  signIN
+  signIN,
+  getItemsForSale
+
     // Add all the other functions that need to be exported
 }

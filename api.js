@@ -18,19 +18,36 @@ app.use(express.static('images'))
 
 // this part of the code deals with signing up
 
+var cookieMap = getCookie() // maps a session id to a username
+
+function getCookie () {
+  var allCookies = fs.readFileSync('allCookie.txt').toString()
+  if (allCookies === '' || !allCookies) {
+    return {}
+  }
+  return JSON.parse(allCookies)
+}
+
 app.post('/signUp', (req, res) => {
   var loginInformation = JSON.parse(req.body)
-
+  console.log('loginInfo', loginInformation)
   var usr = loginInformation.username
   var pwd = loginInformation.password
-  var userID = alibay.initializeUserIfNeeded(usr, pwd)
-
-  var sessionId = '' + Math.floor(Math.random() * 1000000)
-  res.set('Set-Cookie', 'sessionId=' + sessionId)
-  cookieMap[sessionId] = usr
-  console.log(JSON.stringify(req.body.toString()))
-  res.send('You KNow da Wae!')
-  console.log('success')
+  var users = JSON.parse(fs.readFileSync('allUser.txt'))
+  for (let i in users) {
+    if (usr == users[i].username) {
+      console.log('users[i] name:', users[i].username)
+      console.log('user name that is logging in:', usr)
+      res.send('Username TAKEN')
+    } else {
+      var userID = alibay.initializeUserIfNeeded(usr, pwd) // math random for a unique session ID
+      var sessionId = userID
+      res.set('Set-Cookie', 'sessionId=' + sessionId)
+      cookieMap[sessionId] = userID
+      fs.writeFileSync('allCookie.txt', JSON.stringify(cookieMap))
+      res.send('success')
+    }
+  }
 })
 
 app.post('/login', (req, res) => {
@@ -38,8 +55,29 @@ app.post('/login', (req, res) => {
   console.log('test 1', loginInformation)
   var usr = loginInformation.username
   var pwd = loginInformation.password
-  var loggedIn = alibay.signIN(usr, pwd)
-  res.send('' + loggedIn) // send 'success or failure to user'
+  // var loggedIn = alibay.signIN(usr, pwd)
+  var users = JSON.parse(fs.readFileSync('allUser.txt'))
+  console.log(users)
+  for (let i in users) {
+    if (usr == users[i].username) {
+      if (users[i].password == pwd) {
+        if (req.headers.cookie) {
+          let cookies = parseCookies(req.headers.cookie)
+          if (cookies.sessionId) {
+            res.send('Thank you ' + users[i].username + '! you are logged in!!! Your session id is ' + cookies.sessionId)
+            return
+          }
+        }
+        var sessionId = users[i].userID
+        res.set('Set-Cookie', 'sessionId=' + sessionId)
+        cookieMap[sessionId] = users[i].userID
+        fs.writeFileSync('allCookie.txt', JSON.stringify(cookieMap))
+        res.send('success')
+      }
+    }
+  }
+  console.log('user not found')
+  return res.send('Wrong password/username!')
 })
 
 function parseCookies (str) {
@@ -57,29 +95,38 @@ app.get('/', (req, res) => {
       return
     }
   }
-  res.set('Set-Cookie', 'sessionId=' + genRand())
+  res.set('Set-Cookie', 'sessionId=' + alibay.genUID())
   res.send(JSON.stringify(req.headers.cookie))
 })
 
 app.get('/itemsForSale', (req, res) => {
-  let uid = req.query.uid
+  let uid = ''
+  if (req.headers.cookie) {
+    uid = parseCookies(req.headers.cookie)
+  }
   console.log(uid)
-  // res.send(JSON.stringify(alibay.getItemsForSale(uid)))
-  res.send(alibay.testItems)
+  res.send(JSON.stringify(alibay.getItemsForSale(uid)))
+  // res.send(alibay.testItems)
 })
 
 app.get('/itemsSold', (req, res) => {
-  let uid = req.query.uid
+  let uid = ''
+  if (req.headers.cookie) {
+    uid = parseCookies(req.headers.cookie)
+  }
   console.log(uid)
-  // res.send(JSON.stringify(alibay.getItemsSold(uid)))
-  res.send(alibay.testItems)
+  res.send(JSON.stringify(alibay.allItemsSold(uid)))
+  // res.send(alibay.testItems)
 })
 
 app.get('/itemsBought', (req, res) => {
-  let uid = req.query.uid
+  let uid = ''
+  if (req.headers.cookie) {
+    uid = parseCookies(req.headers.cookie)
+  }
   console.log(uid)
-  // res.send(JSON.stringify(alibay.getItemsBought(uid)))
-  res.send(alibay.testItems)
+  res.send(JSON.stringify(alibay.getItemsBought(uid)))
+  // res.send(alibay.testItems)
 })
 
 app.post('/upics', (req, res) => {
@@ -93,8 +140,6 @@ app.post('/upics', (req, res) => {
   console.log(filename)
   res.send('upload successful' + imagePath)
 })
-
-var cookieMap = {} // maps a session id to a username
 
 app.post('/shipping', (req, res) => {
   console.log(req.body)
@@ -125,7 +170,12 @@ app.post('/newListing', (req, res) => {
   var productInformation = JSON.parse(req.body) // Noe has to send product information
   console.log(productInformation)
   var name = productInformation.name
-  var sellerID = 12345
+  let uid = ''
+  if (req.headers.cookie) {
+    uid = parseCookies(req.headers.cookie)
+  }
+  console.log(uid)
+  var sellerID = uid
   var price = productInformation.price
   var blurb = productInformation.blurb
   var image = productInformation.image // getPicture return image path
