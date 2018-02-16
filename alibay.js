@@ -85,15 +85,28 @@ function getUserInfo (x) {
   return ret
 }
 
-/*
-allItemsBought returns the IDs of all the items bought by a buyer
-    parameter: [buyerID] The ID of the buyer
-    returns: an array of listing IDs
-*/
-function allItemsBought (buyerID) {
-  console.log('all items bought', itemsBought[buyerID])
+// /*
+// allItemsBought returns the IDs of all the items bought by a buyer
+//     parameter: [buyerID] The ID of the buyer
+//     returns: an array of listing IDs
+// */
+// function allItemsBought (buyerID) {
+//   let itemsBought = {}
+//   console.log('all items bought', itemsBought[buyerID])
 
-  return itemsBought[buyerID]
+//   return itemsBought[buyerID]
+// }
+
+function getSellerNames () {
+  var ret = {}
+  for (let i in allItems) {
+    if (allItems[i].isSold === false) {
+      var sellerID = allItems[i].sellerID
+      ret[sellerID] = allItems[i].sellerName
+    }
+  }
+  console.log('this is return from get Seller Names', ret)
+  return ret
 }
 
 /*
@@ -109,12 +122,13 @@ function createListing (sellerID, name, price, blurb, image) {
   console.log(sellerID, name, price, blurb, image)
   var productObj = {}
   productObj.sellerID = sellerID
+  productObj.sellerName = allUser[sellerID].username
   productObj.prodName = name
   productObj.price = price
   productObj.blurb = blurb
   productObj.isSold = false
   productObj.image = image
-  console.log('test image', image)
+  console.log(productObj)
   var listingID = genUID()
   productObj.itemId = listingID
   allItems[listingID] = productObj
@@ -262,11 +276,12 @@ module.exports = {
   allItemsSold,
   allListings,
   searchForListings,
-  allItemsBought,
+  // allItemsBought,
   allItems,
   ItemsForSalebySeller,
   getUserInfo,
-  shippingInfo
+  shippingInfo,
+  getSellerNames
 
     // Add all the other functions that need to be exported
 }

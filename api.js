@@ -16,7 +16,7 @@ app.use(bodyParser.raw({ type: '*/*', limit: '50mb' }))
 app.use(express.static('images'))
 
 /// ////////////////////////////////////////////////////////////////
-// SIGN-UP AND LOGIN - this part of the code deals with signing up
+// SIGN-UP/LOGIN/LOGOUT - this part of the code deals with signing up
 /// ////////////////////////////////////////////////////////////////
 
 var cookieMap = getCookie() // maps a session id to a username
@@ -140,9 +140,32 @@ app.get('/firstCookie', (req, res) => {
       for (let i in users) {
         if (cookies.sessionId == users[i].userID) {
           console.log('user has a cookie we recognize!')
-          res.send('success welcome back!')
+          res.send(users[i].username)
+          return
         }
       }
+    }
+  }
+  res.send('fail')
+})
+
+app.get('/logout', (req, res) => {
+  if (req.headers.cookie) {
+    console.log('we have a cookie, now check the cookie against username')
+    let cookies = parseCookies(req.headers.cookie)
+    if (cookies.sessionId) {
+      console.log('there is a session ID', cookies.sessionId)
+      var users = JSON.parse(fs.readFileSync('allUser.txt'))
+      for (let i in users) {
+        if (cookies.sessionId == users[i].userID) {
+          console.log('user has a cookie we recognize!')
+          delete cookieMap[cookies.sessionId]
+          console.log(cookieMap[cookies.sessionId])
+          res.send('success')
+          return
+        }
+      }
+      res.send('failure')
     }
   }
 })
@@ -229,6 +252,17 @@ app.get('/itemsBought', (req, res) => {
   var allItemsBought = alibay.getItemsBought(uid)
   console.log('this is all ItemsBought', allItemsBought)
   res.send(JSON.stringify(allItemsBought))
+})
+
+app.get('/getSellerNames', (req, res) => {
+  var sellerNames = alibay.getSellerNames()
+  console.log(sellerNames)
+  res.send(sellerNames)
+})
+
+app.post('/itemsSoldby', (req, res) => {
+  var ret = alibay.ItemsForSalebySeller(JSON.parse(req.body))
+  res.send(JSON.stringify(ret))
 })
 
 /// ////////////////////////////////////////////////////////////////
