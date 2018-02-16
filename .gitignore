@@ -57,8 +57,3 @@ typings/
 # dotenv environment variables file
 .env
 
-# txt files
-allItems.txt
-
-# image file  
-images/
