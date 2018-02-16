@@ -1,3 +1,5 @@
+// import { userInfo } from 'os'
+
 // import { readFileSync } from 'fs'
 
 'use strict'
@@ -5,40 +7,10 @@
 const assert = require('assert')
 const fs = require('fs')
 
-// let testItem = {
-//   prodName: 'Red Boat',
-//   price: 5000,
-//   blurb: 'a very nice red boat!',
-//   image: 'http://clipart-library.com/img/1699050.jpg',
-//   isSold: false,
-//   sellerID: genUID,
-//   itemId: genUID
-// }
-
-let testItems = {
-  1: {
-    prodName: 'Red Boat',
-    price: 5000,
-    blurb: 'a very nice red boat!',
-    image: 'http://clipart-library.com/img/1699050.jpg',
-    isSold: false,
-    sellerID: genUID(),
-    itemId: genUID()},
-  2: {
-    prodName: 'Blue Boat',
-    price: 6000,
-    blurb: 'a very nice blue boat!',
-    image: 'http://clipart-library.com/img/1699050.jpg',
-    isSold: false,
-    sellerID: genUID(),
-    itemId: genUID()
-  }
-}
-
 // ask TA about Dynamic Key
-let itemsBought = [] // map that keeps track of all the items a user has bought
+// let itemsBought = [] // map that keeps track of all the items a user has bought
 let allItems = getItems()
-let itemsSold = []
+// let itemsSold = []
 let allUser = getUsers()
 
 function getItems () {
@@ -63,23 +35,24 @@ function genUID () {
   return Math.floor(Math.random() * 100000000)
 }
 
-function putItemsBought (userID, value) {
-  itemsBought[userID] = value
-}
+// function putItemsBought (userID, value) {
+//   itemsBought[userID] = value
+// }
 
 function getItemsBought (userID) {
-  var ret = allItems[userID] //  itemsBought[userID]
-  if (ret === undefined) {
-    return null
+  var ret = []
+  for (let i in allItems) {
+    if (allItems[i].isSold === true) {
+      if (allItems[i].buyerID === userID) {
+        ret.push(allItems[i])
+      }
+    }
   }
+  // if (ret === undefined) {
+  //   return null
+  // }
+  console.log(ret)
   return ret
-}
-
-function signIN (usr, pwd) {
-  if (usr === 'bob' && pwd === '12345') {
-    return 'success'
-  }
-  return 'failure'
 }
 
 /*
@@ -94,13 +67,13 @@ function initializeUserIfNeeded (usr, pwd, email, phoneNumber) {
   var userID = genUID()
   user.sellerID = userID
   user.userID = userID
-  allUser[userID] = user
   user.email = email
   user.number = phoneNumber
-  var items = getItemsBought[user.userID]
-  if (items === undefined) {
-    putItemsBought(userID, [])
-  }
+  allUser[userID] = user
+  // var items = getItemsBought[user.userID]
+  // if (items === undefined) {
+  //   putItemsBought(userID, [])
+  // }
   fs.writeFileSync('allUser.txt', JSON.stringify(allUser))
   console.log(allUser[userID].userID)
   console.log(allUser)
@@ -147,7 +120,7 @@ function createListing (sellerID, name, price, blurb, image) {
   allItems[listingID] = productObj
   console.log('test 1', allItems)
   fs.writeFileSync('allItems.txt', JSON.stringify(allItems))
-  return listingID
+  return allItems[listingID].itemId
 }
 
 /*
@@ -178,14 +151,25 @@ The seller will see the listing in his history of items sold
      [listingID] The ID of listing
     returns: undefined
 */
-function buy (buyerID, sellerID, listingID) {
+function buy (sellerID, buyerID, listingID, confirmation, email, date) {
   allItems[listingID].isSold = true
+  allItems[listingID].buyerID = buyerID
+  allItems[listingID].confirmation = confirmation
+  allItems[listingID].buyerEmail = email
+  allItems[listingID].orderDate = date
+  allItems[listingID].sellerEmail = allUser[sellerID].email
+  allItems[listingID].sellerNumber = allUser[sellerID].number
+  fs.writeFileSync('allItems.txt', JSON.stringify(allItems))
+  console.log('the new item object', allItems[listingID])
 
-  itemsBought[buyerID] = itemsBought[buyerID].concat(listingID)
-  if (itemsSold[sellerID] === undefined) { itemsSold[sellerID] = [] }
-  itemsSold[sellerID] = itemsSold[sellerID].concat(listingID)
-  console.log('buy ItemsBought', itemsBought[buyerID])
-  console.log('buy ItemsSold', itemsSold[sellerID])
+  // if (itemsBought[buyerID] === undefined) { itemsBought[buyerID] = [] }
+  // itemsBought[buyerID] = itemsBought[buyerID].concat(allItems[listingID])
+  // console.log('items that were bought by this buyer' + itemsBought[buyerID])
+  // if (itemsSold[sellerID] === undefined) { itemsSold[sellerID] = [] }
+  // itemsSold[sellerID] = itemsSold[sellerID].concat(allItems[listingID])
+  // console.log('items that were sold by this seller' + itemsSold[sellerID])
+  // console.log('buy ItemsBought', itemsBought[buyerID])
+  // console.log('buy ItemsSold', itemsSold[sellerID])
   return undefined
 }
 
@@ -195,35 +179,30 @@ allItemsSold returns the IDs of all the items sold by a seller
     returns: an array of listing IDs
 */
 function allItemsSold (sellerID) {
-  var allItemsSold = {}
-  // console.log('ItemSold', itemsSold)
-  // console.log('SellerID', sellerID)
-  // console.log('ItemsSOld(sellerID)', itemsSold[sellerID])
-  // var arr = []
-  // console.log(itemsSold[sellerID].listingID)
-  // var allItemsSold = arr.concat(itemsSold[sellerID].listingID)
-
-  // for (let i of itemsSold[sellerID]) {
-  //   var allItemsSold = arr.concat(itemsSold[sellerID])
-  // console.log('list of items sold', allItemsSold)
-
-  return allItemsSold // itemsSold[sellerID]
+  var itemsSold = []
+  for (let i in allItems) {
+    if (allItems[i].isSold === true) {
+      if (allItems[i].sellerID === sellerID) {
+        itemsSold.push(allItems[i])
+      }
+    }
+  // if (itemsSold === undefined) {
+  //   return null
+  }
+  console.log('these are the items sold', itemsSold)
+  return itemsSold
 }
 
-function getItemsForSale (sellerID) {
-  var itemsForSale = {}
-  itemsForSale = allItems[sellerID]
-  // console.log('ItemSold', itemsSold)
-  // console.log('SellerID', sellerID)
-  // console.log('ItemsSOld(sellerID)', itemsSold[sellerID])
-  // var arr = []
-  // console.log(itemsSold[sellerID].listingID)
-  // var allItemsSold = arr.concat(itemsSold[sellerID].listingID)
-
-  // for (let i of itemsSold[sellerID]) {
-  //   var allItemsSold = arr.concat(itemsSold[sellerID])
-  // console.log('list of items sold', allItemsSold)
-
+function ItemsForSalebySeller (sellerID) {
+  var itemsForSale = []
+  for (let i in allItems) {
+    if (allItems[i].isSold === false) {
+      if (allItems[i].sellerID === sellerID) {
+        itemsForSale.push(allItems[i])
+      }
+    }
+  }
+  console.log('items for sale', itemsForSale)
   return itemsForSale
 }
 
@@ -234,7 +213,6 @@ Once an item is sold, it will not be returned by allListings
 */
 function allListings () {
   var allListings = []
-  // console.log('allItems - All LIstings', allItems)
   for (let i in allItems) {
     if (!allItems[i].sold) {
       allListings = allListings.concat(allItems[i].itemId)
@@ -243,52 +221,40 @@ function allListings () {
   }
 }
 
-function shippingInfo (object) {
-
+function shippingInfo (obj, buyerID) {
+  var userShippingInfo = {}
+  userShippingInfo.address = obj.address
+  userShippingInfo.fullName = obj.firstName + '' + obj.lastName
+  userShippingInfo.address = obj.address
+  userShippingInfo.city = obj.city
+  userShippingInfo.province = obj.province
+  userShippingInfo.zip = obj.zip
+  userShippingInfo.country = obj.country
+  var listingID = obj.itemId
+  allItems[listingID].shippingAddress = userShippingInfo
+  allUser[buyerID].shippingAddress = userShippingInfo
+  fs.writeFileSync('allItems.txt', JSON.stringify(allItems))
+  return undefined
 }
-/*
-searchForListings returns the IDs of all the listings currently on the market
-Once an item is sold, it will not be returned by searchForListings
-    parameter: [searchTerm] The search string matching listing descriptions
-    returns: an array of listing IDs
-*/
+
 function searchForListings (searchTerm) {
   var searchResults = []
   searchTerm = searchTerm.toLowerCase()
-  console.log('searchTerm', searchTerm)
-  // let list = allListings()
-  // (blurb.includes(searchTerm) ||
   let list = allItems
-  console.log('list', list)
   for (let i in list) {
-    console.log('this is i', i)
-    console.log(list[i].blurb)
-    console.log(list[i].prodName)
-    console.log('list[i]', list[i])
     var searchBlurb = list[i].blurb.toLowerCase()
-    console.log('searchBlurb', searchBlurb)
     var searchName = list[i].prodName.toLowerCase()
-    console.log('searchName', searchName)
-    console.log('searchTerm', searchTerm)
     if (searchBlurb.includes(searchTerm) || searchName.includes(searchTerm)) {
       searchResults = searchResults.concat(list[i])
-      console.log('search results', searchResults)
     }
-  // list.forEach(id => {
-  //   var blurb = testItems.blurb
-  //   // var blurb = allItems[id].blurb
-  //   if (blurb.includes(searchTerm)) {
-  //     searchResults = searchResults.concat(id)
-  //   }
   }
-  console.log('search results', searchResults)
   return searchResults
 }
 
 module.exports = {
-  genUID, // This is just a shorthand. It's the same as genUID: genUID.
+  genUID,
   initializeUserIfNeeded,
-  putItemsBought,
+  // putItemsBought,
   getItemsBought,
   createListing,
   getItemDescription,
@@ -298,11 +264,9 @@ module.exports = {
   searchForListings,
   allItemsBought,
   allItems,
-  // testItem,
-  testItems,
-  signIN,
-  getItemsForSale,
-  getUserInfo
+  ItemsForSalebySeller,
+  getUserInfo,
+  shippingInfo
 
     // Add all the other functions that need to be exported
 }
