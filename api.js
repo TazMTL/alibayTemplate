@@ -29,106 +29,82 @@ function getCookie () {
   return JSON.parse(allCookies)
 }
 
-app.post('/signUp', (req, res) => {
-  var loginInformation = JSON.parse(req.body)
-  console.log('loginInfo', loginInformation)
-  var usr = loginInformation.username
-  var pwd = loginInformation.password
-  var email = loginInformation.email
-  var phoneNumber = loginInformation.phoneNumber
-  var users = JSON.parse(fs.readFileSync('allUser.txt'))
-  for (let i in users) {
-    if (usr == users[i].username) {
-      console.log('username is taken')
-      res.send('username taken, please try again, or sign-in')
-      return
-    } else {
-      var userID = alibay.initializeUserIfNeeded(usr, pwd, email, phoneNumber)
-      console.log('user has been registered')
-      if (req.headers.cookie) {
-        console.log('we have a cookie, now check the cookie against username')
-        let cookies = parseCookies(req.headers.cookie)
-        if (cookies.sessionId) {
-          console.log('there is a session ID', cookies.sessionId)
-          if (cookies.sessionId == users[i].userID) {
-            console.log('user has the right cookie')
-            res.send('success')
-            return
-          } else {
-            var sessionId = users[i].userID
-            res.set('Set-Cookie', 'sessionId=' + sessionId)
-            cookieMap[sessionId] = users[i].userID
-            fs.writeFileSync('allCookie.txt', JSON.stringify(cookieMap))
-            res.send('success')
-            return
-          }
-        }
-      } else {
-        console.log('set a new cookie')
-        sessionId = users[i].userID
-        res.set('Set-Cookie', 'sessionId=' + sessionId)
-        cookieMap[sessionId] = users[i].userID
-        fs.writeFileSync('allCookie.txt', JSON.stringify(cookieMap))
-        res.send('success')
-      }
-    }
-  }
-})
-
-app.post('/login', (req, res) => {
-  var loginInformation = JSON.parse(req.body)
-  console.log('test 1', loginInformation)
-  var usr = loginInformation.username
-  var pwd = loginInformation.password
-  // var loggedIn = alibay.signIN(usr, pwd)
-  var users = JSON.parse(fs.readFileSync('allUser.txt'))
-  // console.log(users)
-  for (let i in users) {
-    // console.log(usr)
-    // console.log(users[i].username)
-    if (usr == users[i].username) {
-      console.log('username matched!')
-      if (users[i].password == pwd) {
-        console.log('password matched!')
-        if (req.headers.cookie) {
-          console.log('we have a cookie, now check the cookie against username')
-          let cookies = parseCookies(req.headers.cookie)
-          if (cookies.sessionId) {
-            console.log('there is a session ID', cookies.sessionId)
-            if (cookies.sessionId == users[i].userID) {
-              console.log('user has the right cookie')
-              res.send('success')
-              return
-            } else {
-              var sessionId = users[i].userID
-              res.set('Set-Cookie', 'sessionId=' + sessionId)
-              cookieMap[sessionId] = users[i].userID
-              fs.writeFileSync('allCookie.txt', JSON.stringify(cookieMap))
-              res.send('success')
-              return
-            }
-          }
-        } else {
-          console.log('set a new cookie')
-          sessionId = users[i].userID
-          res.set('Set-Cookie', 'sessionId=' + sessionId)
-          cookieMap[sessionId] = users[i].userID
-          fs.writeFileSync('allCookie.txt', JSON.stringify(cookieMap))
-          res.send('success')
-        }
-      }
-    }
-  }
-  console.log('user not found')
-  res.send('user not found')
-})
-
 function parseCookies (str) {
   let asArray = str.split('; ').map(x => x.split('='))
   let ret = {}
   asArray.forEach(lst => ret[lst[0]] = lst[1])
   return ret
 }
+
+app.post('/signUp', (req, res) => {
+  var loginInformation = JSON.parse(req.body)
+  // console.log('loginInfo', loginInformation)
+  var usr = loginInformation.username
+  var pwd = loginInformation.password
+  var email = loginInformation.email
+  var phoneNumber = loginInformation.phoneNumber
+  var users = JSON.parse(fs.readFileSync('allUser.txt'))
+  for (let i in users) {
+    if (usr === users[i].username) {
+      return res.send('username taken, please try again, or sign-in')
+    } else {
+      var userID = alibay.initializeUserIfNeeded(usr, pwd, email, phoneNumber)
+      break
+    }
+  }
+  var sessionId = userID
+  res.set('Set-Cookie', 'sessionId=' + sessionId)
+  cookieMap[sessionId] = userID
+  fs.writeFileSync('allCookie.txt', JSON.stringify(cookieMap))
+  return res.send('success')
+})
+
+app.post('/login', (req, res) => {
+  var loginInformation = JSON.parse(req.body)
+  // console.log('test 1', loginInformation)
+  var usr = loginInformation.username
+  var pwd = loginInformation.password
+  var userID
+  var users = JSON.parse(fs.readFileSync('allUser.txt'))
+  // console.log(users)
+  for (let i in users) {
+    if (usr === users[i].username) {
+      userID = users[i].userID
+      // console.log('username matched!')
+      break
+    }
+  }
+  if (!userID) {
+    return res.send('username incorrect')
+  } // conditional about userID
+  if (users[userID].password === pwd) {
+    console.log('password matched!')
+  } else {
+    return res.send('password incorrect')
+  }
+
+  if (req.headers.cookie) {
+    let cookies = parseCookies(req.headers.cookie)
+    if (cookies.sessionId) {
+      if (cookies.sessionId === userID) {
+        console.log('user has the right cookie')
+        return res.send('success')
+      } else {
+        var sessionId = userID
+        res.set('Set-Cookie', 'sessionId=' + sessionId)
+        cookieMap[sessionId] = userID
+        fs.writeFileSync('allCookie.txt', JSON.stringify(cookieMap))
+        return res.send('success')
+      }
+    }
+  }
+  console.log('set a new cookie')
+  sessionId = userID
+  res.set('Set-Cookie', 'sessionId=' + sessionId)
+  cookieMap[sessionId] = userID
+  fs.writeFileSync('allCookie.txt', JSON.stringify(cookieMap))
+  res.send('success')
+})
 
 app.get('/firstCookie', (req, res) => {
   if (req.headers.cookie) {
@@ -151,23 +127,10 @@ app.get('/firstCookie', (req, res) => {
 
 app.get('/logout', (req, res) => {
   if (req.headers.cookie) {
-    console.log('we have a cookie, now check the cookie against username')
-    let cookies = parseCookies(req.headers.cookie)
-    if (cookies.sessionId) {
-      console.log('there is a session ID', cookies.sessionId)
-      var users = JSON.parse(fs.readFileSync('allUser.txt'))
-      for (let i in users) {
-        if (cookies.sessionId == users[i].userID) {
-          console.log('user has a cookie we recognize!')
-          delete cookieMap[cookies.sessionId]
-          console.log(cookieMap[cookies.sessionId])
-          res.send('success')
-          return
-        }
-      }
-      res.send('failure')
-    }
+    res.set('Set-Cookie', 'sessionId=' + '')
+    return res.send('success')
   }
+  return res.send('you are already logged out!')
 })
 
 /// ////////////////////////////////////////////////////////////////
