@@ -33,14 +33,17 @@ app.post('/signUp', (req, res) => {
   console.log('loginInfo', loginInformation)
   var usr = loginInformation.username
   var pwd = loginInformation.password
+  var email = loginInformation.email
+  var phoneNumber = loginInformation.phoneNumber
   var users = JSON.parse(fs.readFileSync('allUser.txt'))
   for (let i in users) {
     if (usr == users[i].username) {
       console.log('users[i] name:', users[i].username)
       console.log('user name that is logging in:', usr)
       res.send('Username TAKEN')
+      break
     } else {
-      var userID = alibay.initializeUserIfNeeded(usr, pwd) // math random for a unique session ID
+      var userID = alibay.initializeUserIfNeeded(usr, pwd, email, phoneNumber) // math random for a unique session ID
       var sessionId = userID
       res.set('Set-Cookie', 'sessionId=' + sessionId)
       cookieMap[sessionId] = userID
@@ -61,11 +64,13 @@ app.post('/login', (req, res) => {
   for (let i in users) {
     if (usr == users[i].username) {
       if (users[i].password == pwd) {
+        console.log('user has been found')
         if (req.headers.cookie) {
           let cookies = parseCookies(req.headers.cookie)
           if (cookies.sessionId) {
+            console.log('there is a session ID', cookies.sessionId)
             res.send('Thank you ' + users[i].username + '! you are logged in!!! Your session id is ' + cookies.sessionId)
-            return
+            break
           }
         }
         var sessionId = users[i].userID
@@ -73,11 +78,12 @@ app.post('/login', (req, res) => {
         cookieMap[sessionId] = users[i].userID
         fs.writeFileSync('allCookie.txt', JSON.stringify(cookieMap))
         res.send('success')
+        break
       }
     }
+    console.log('user not found')
+    res.send('Wrong password/username!')
   }
-  console.log('user not found')
-  return res.send('Wrong password/username!')
 })
 
 function parseCookies (str) {
@@ -87,17 +93,33 @@ function parseCookies (str) {
   return ret
 }
 
-app.get('/', (req, res) => {
-  if (req.headers.cookie) {
-    let cookies = parseCookies(req.headers.cookie)
-    if (cookies.sessionId) {
-      res.send('Your session id is ' + cookies.sessionId)
-      return
+function checkCookies (cookieHeader) {
+  var cookies = JSON.parse(fs.readFileSync('allCookie.txt'))
+  for (let i in cookies) {
+    if (cookieHeader == cookies[i]) {
+      console.log("you've been here before!")
+      var currentUser = getUserInfo(cookieHeader)
+      return currentUser
     }
   }
-  res.set('Set-Cookie', 'sessionId=' + alibay.genUID())
-  res.send(JSON.stringify(req.headers.cookie))
-})
+}
+
+// app.get('/firstCookie', (req, res) => {
+//   console.log('Someone is knocking on the door')
+//   console.log('this is the cookie', req.headers.cookies)
+//   if (req.headers.cookie) {
+//     let cookies = parseCookies(req.headers.cookie)
+//     console.log('this is the parsed cookie', cookies)
+//     if (cookies.sessionId) {
+//       res.send('Your session id is ' + cookies.sessionId)
+//       console.log("he's already got a cookie!")
+//       return
+//     }
+//   }
+//   res.set('Set-Cookie', 'sessionId=' + alibay.genUID())
+//   console.log('I set a new cookie!')
+//   res.send(JSON.stringify(req.headers.cookie))
+// })
 
 app.get('/itemsForSale', (req, res) => {
   let uid = ''
@@ -142,13 +164,14 @@ app.post('/upics', (req, res) => {
 })
 
 app.post('/shipping', (req, res) => {
-  console.log(req.body)
   var shippingInfo = JSON.parse(req.body)
-//   console.log(shippingInfo)
-//   res.send('Your Address: ' + shippingInfo. + 'Confirmation Number ' + alibay.genUID())
-  res.send({
-    shippingInfo
-  })
+  console.log(shippingInfo)
+  var confirmation = alibay.genUID()
+  console.log(req.headers.cookie)
+  res.send('' + confirmation)
+  // res.send({
+  //   shippingInfo
+  // })
     // add it to user profile
 })
 
@@ -170,17 +193,19 @@ app.post('/newListing', (req, res) => {
   var productInformation = JSON.parse(req.body) // Noe has to send product information
   console.log(productInformation)
   var name = productInformation.name
-  let uid = ''
+  var uid = {}
+  console.log('this is a cookie', req.headers.cookie)
   if (req.headers.cookie) {
     uid = parseCookies(req.headers.cookie)
+    console.log('this is a parsed cookie', uid)
   }
-  console.log(uid)
-  var sellerID = uid
+  console.log('this is a sessionId', uid.sessionId)
+  var sellerID = uid.sessionId
   var price = productInformation.price
   var blurb = productInformation.blurb
   var image = productInformation.image // getPicture return image path
   var listingID = alibay.createListing(sellerID, name, price, blurb, image)
-  res.send(alibay.allItems[listingID])
+  res.send(alibay.allItems[sellerID])
 }
 )
 

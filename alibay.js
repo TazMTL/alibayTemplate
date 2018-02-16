@@ -87,7 +87,7 @@ initializeUserIfNeeded adds the UID to our database unless it's already there
 parameter: [uid] the UID of the user.
 returns: undefined
 */
-function initializeUserIfNeeded (usr, pwd) {
+function initializeUserIfNeeded (usr, pwd, email, phoneNumber) {
   var user = {}
   user.username = usr
   user.password = pwd
@@ -95,12 +95,21 @@ function initializeUserIfNeeded (usr, pwd) {
   user.sellerID = userID
   user.userID = userID
   allUser[userID] = user
+  user.email = email
+  user.number = phoneNumber
   var items = getItemsBought[user.userID]
   if (items === undefined) {
     putItemsBought(userID, [])
   }
   fs.writeFileSync('allUser.txt', JSON.stringify(allUser))
+  console.log(allUser[userID].userID)
+  console.log(allUser)
   return allUser[userID].userID
+}
+
+function getUserInfo (x) {
+  var ret = allUser[x]
+  return ret
 }
 
 /*
@@ -292,7 +301,8 @@ module.exports = {
   // testItem,
   testItems,
   signIN,
-  getItemsForSale
+  getItemsForSale,
+  getUserInfo
 
     // Add all the other functions that need to be exported
 }
