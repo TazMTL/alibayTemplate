@@ -38,7 +38,6 @@ function parseCookies (str) {
 
 app.post('/signUp', (req, res) => {
   var loginInformation = JSON.parse(req.body)
-  // console.log('loginInfo', loginInformation)
   var usr = loginInformation.username
   var pwd = loginInformation.password
   var email = loginInformation.email
@@ -114,7 +113,7 @@ app.get('/firstCookie', (req, res) => {
       console.log('there is a session ID', cookies.sessionId)
       var users = JSON.parse(fs.readFileSync('allUser.txt'))
       for (let i in users) {
-        if (cookies.sessionId == users[i].userID) {
+        if (cookies.sessionId === users[i].userID) {
           console.log('user has a cookie we recognize!')
           res.send(users[i].username)
           return
@@ -161,7 +160,7 @@ app.post('/newListing', (req, res) => {
     uid = parseCookies(req.headers.cookie)
   }
   var sellerID = uid.sessionId
-  var listingID = alibay.createListing(sellerID, name, price, blurb, image)
+  alibay.createListing(sellerID, name, price, blurb, image)
   var itemsForsale = alibay.ItemsForSalebySeller(sellerID)
   res.send('success and here are all of the items this seller has put up for sale' + JSON.stringify(itemsForsale))
 }
@@ -226,6 +225,16 @@ app.get('/getSellerNames', (req, res) => {
 app.post('/itemsSoldby', (req, res) => {
   var ret = alibay.ItemsForSalebySeller(JSON.parse(req.body))
   res.send(JSON.stringify(ret))
+})
+
+app.post('/deleteItem', (req, res) => {
+  if (cookieMap[parseCookies(req.headers.cookie)] === undefined) { res.send('Log in you louse!') }
+  var itemToDelete = JSON.parse(req.body)
+  delete alibay.allItems[itemToDelete]
+  console.log(alibay.allItems[itemToDelete])
+  if (!alibay.allItems[itemToDelete]) {
+    return res.send('success')
+  }
 })
 
 /// ////////////////////////////////////////////////////////////////
