@@ -224,13 +224,9 @@ app.post('/itemsSoldby', (req, res) => {
 })
 
 app.post('/deleteItem', (req, res) => {
-  console.log('this is the item to delete 1', alibay.allItems[itemToDelete])
-  console.log('this is what I get from delete endpoint', JSON.parse(req.body))
   // if (cookieMap[parseCookies(req.headers.cookie)] === undefined) { res.send('Log in you louse!') }
   var itemToDelete = JSON.parse(req.body)
-  console.log('this is the item to delete 2', alibay.allItems[itemToDelete])
   delete alibay.allItems[itemToDelete]
-  console.log('this is the item to delete 3', alibay.allItems[itemToDelete])
   fs.writeFileSync('allItems.txt', JSON.stringify(alibay.allItems))
   // res.send(alibay.allItems[])
   return res.send("'success'")
