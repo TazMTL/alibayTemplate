@@ -112,13 +112,7 @@ app.get('/firstCookie', (req, res) => {
     if (cookies.sessionId) {
       console.log('there is a session ID', cookies.sessionId)
       var users = JSON.parse(fs.readFileSync('allUser.txt'))
-      for (let i in users) {
-        if (cookies.sessionId === users[i].userID) {
-          console.log('user has a cookie we recognize!')
-          res.send(users[i].username)
-          return
-        }
-      }
+      return res.send(users[cookies.sessionId].username)
     }
   }
   res.send('fail')
@@ -219,7 +213,9 @@ app.get('/itemsBought', (req, res) => {
 app.get('/getSellerNames', (req, res) => {
   var sellerNames = alibay.getSellerNames()
   console.log(sellerNames)
-  res.send(sellerNames)
+  console.log('success')
+  res.send(JSON.stringify(sellerNames))
+  // res.send(sellerNames)
 })
 
 app.post('/itemsSoldby', (req, res) => {
@@ -228,13 +224,16 @@ app.post('/itemsSoldby', (req, res) => {
 })
 
 app.post('/deleteItem', (req, res) => {
-  if (cookieMap[parseCookies(req.headers.cookie)] === undefined) { res.send('Log in you louse!') }
+  console.log('this is the item to delete 1', alibay.allItems[itemToDelete])
+  console.log('this is what I get from delete endpoint', JSON.parse(req.body))
+  // if (cookieMap[parseCookies(req.headers.cookie)] === undefined) { res.send('Log in you louse!') }
   var itemToDelete = JSON.parse(req.body)
+  console.log('this is the item to delete 2', alibay.allItems[itemToDelete])
   delete alibay.allItems[itemToDelete]
-  console.log(alibay.allItems[itemToDelete])
-  if (!alibay.allItems[itemToDelete]) {
-    return res.send('success')
-  }
+  console.log('this is the item to delete 3', alibay.allItems[itemToDelete])
+  fs.writeFileSync('allItems.txt', JSON.stringify(alibay.allItems))
+  // res.send(alibay.allItems[])
+  return res.send("'success'")
 })
 
 /// ////////////////////////////////////////////////////////////////
@@ -256,8 +255,8 @@ app.post('/shipping', (req, res) => {
   var date = shippingInfo.orderDate
   alibay.buy(sellerId, buyerId, itemId, confirmation, email, date)
   alibay.shippingInfo(shippingInfo, buyerId)
-  console.log('item has been bought')
-  res.send('item has been bought' + confirmation)
+  console.log('confirmation test - buy function')
+  res.send(JSON.stringify(confirmation))
 })
 
 app.listen(4000, () => console.log('Listening on port 4000!'))
